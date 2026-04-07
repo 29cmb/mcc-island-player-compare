@@ -1,12 +1,20 @@
 export const ResponseCodes = {
     INVALID_SERVER_CREDENTIALS: 0,
-    PLAYER_LOOKUP_FAILED: 1
+    PLAYER_LOOKUP_FAILED: 1,
+    INVALID_PLAYERS: 2
 }
 
 const query: string = `
 query playerData($player1: String!, $player2: String!) {
   player1: playerByUsername(username: $player1) {
+    ranks
+    mccPlusStatus {
+      evolution
+    }
     crownLevel {
+      levelData {
+        level
+      }
       overall_trophies: trophies {
         obtained
         obtainable
@@ -28,7 +36,14 @@ query playerData($player1: String!, $player2: String!) {
   }
 
   player2: playerByUsername(username: $player2) {
+    ranks
+    mccPlusStatus {
+      evolution
+    }
     crownLevel {
+      levelData {
+        level
+      }
       overall_trophies: trophies {
         obtained
         obtainable
@@ -64,7 +79,14 @@ export default async function getData(user1: string, user2: string): Promise<{ s
             mccIslandData = {
                 data: {
                     player1: {
+                        ranks: ["GRAND_CHAMP_SUPREME", "GRAND_CHAMP_ROYALE", "GRAND_CHAMP", "CHAMP"],
+                        mccPlusStatus: {
+                            evolution: 1
+                        },
                         crownLevel: {
+                            levelData: {
+                                level: 73
+                            },
                             overall_trophies: {
                                 obtained: 1,
                                 obtainable: 2
@@ -84,7 +106,14 @@ export default async function getData(user1: string, user2: string): Promise<{ s
                         }
                     },
                     player2: {
+                        ranks: ["CONTESTANT", "GRAND_CHAMP_SUPREME", "GRAND_CHAMP_ROYALE", "GRAND_CHAMP", "CHAMP"],
+                        mccPlusStatus: {
+                            evolution: 1
+                        },
                         crownLevel: {
+                            levelData: {
+                                level: 109
+                            },
                             overall_trophies: {
                                 obtained: 2,
                                 obtainable: 2
@@ -132,6 +161,10 @@ export default async function getData(user1: string, user2: string): Promise<{ s
         return { success: false, code: ResponseCodes.PLAYER_LOOKUP_FAILED }
     }
 
+    if(!mccIslandData.data.player1 || !mccIslandData.data.player2) {
+        return { success: false, code: ResponseCodes.INVALID_PLAYERS }
+    }
+
     return { success: true, ...mccIslandData }
 }
 
@@ -140,13 +173,25 @@ export type SuccessfulComparisonDataResponse = {
     data: ComparisonData
 }
 
+export type UnsuccessfulComparisonDataResponse = {
+    success: false,
+    code: number
+}
+
 export type ComparisonData = {
     player1: PlayerComparisonData,
     player2: PlayerComparisonData
 }
 
 export type PlayerComparisonData = {
+    ranks: Rank[]
+    mccPlusStatus?: {
+        evolution: number
+    }
     crownLevel: {
+        levelData: {
+            level: number
+        },
         overall_trophies: {
             obtained: number,
             obtainable: number,
@@ -165,3 +210,5 @@ export type PlayerComparisonData = {
         }
     }
 }
+
+type Rank = "NOXCREW" | "GRAND_CHAMP_SUPREME" | "GRAND_CHAMP_ROYALE" | "GRAND_CHAMP" | "CHAMP" | "CONTESTANT" | "CREATOR"

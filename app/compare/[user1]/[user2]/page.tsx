@@ -1,17 +1,34 @@
 import Skin from "@/components/Skin"
-import getData, { PlayerComparisonData, SuccessfulComparisonDataResponse } from "@/lib/getData"
+import getData, { PlayerComparisonData, ResponseCodes, SuccessfulComparisonDataResponse, UnsuccessfulComparisonDataResponse } from "@/lib/getData"
 import Image from "next/image"
+
+const CodeResponses = {
+    [ResponseCodes.INVALID_PLAYERS]: "One or both of the players were not found or have not logged in recently!",
+    [ResponseCodes.INVALID_SERVER_CREDENTIALS]: "Server is not set up correctly!",
+    [ResponseCodes.PLAYER_LOOKUP_FAILED]: "Internal Error!"
+}
+
+const RankPriorities = {
+    "NOXCREW": 1,
+    "CONTESTANT": 2,
+    "MODERATOR": 3,
+    "CREATOR": 4,
+    "GRAND_CHAMP_SUPREME": 5,
+    "GRAND_CHAMP_ROYALE": 6,
+    "GRAND_CHAMP": 7,
+    "CHAMP": 8
+}
 
 export default async function ComparePage({ params }: { params: Promise<{ user1: string, user2: string }> }) {
     const { user1, user2 } = await params
     const dataResult = await getData(user1, user2)
-    console.log(dataResult)
 
     if(!dataResult.success) {
-        return <p>An error occurred when trying to fetch user data</p>
+        return <p className="text-center m-10">{CodeResponses[(dataResult as UnsuccessfulComparisonDataResponse).code] || "An error occurred when trying to fetch user data"}</p>
     }
 
     const data = (dataResult as SuccessfulComparisonDataResponse).data
+    console.log(data)
 
     return <div className="flex align-center m-auto">
         <ComparisonBox username={user1} data={data.player1}/>
@@ -20,10 +37,35 @@ export default async function ComparePage({ params }: { params: Promise<{ user1:
 }
 
 function ComparisonBox({ username, data }: { username: string, data: PlayerComparisonData }) {
+    const icons = []
+    if(data.ranks.length == 0) {
+        icons.push("https://islandcdn.themysterys.com/ranks/default.png")
+    } else {
+        const highestRank = data.ranks.reduce((lowest, current) =>
+            RankPriorities[current] < RankPriorities[lowest] ? current : lowest
+        )
+        icons.push(`https://islandcdn.themysterys.com/ranks/${highestRank.toLowerCase()}.png`)
+    }
+    icons.push(`https://islandcdn.themysterys.com/icons/crowns/${Math.min(Math.floor(data.crownLevel.levelData.level / 10), 10)}.png`)
+
     return <div className="flex flex-col m-2">
         <Skin username={username} />
         <div className="bg-[#030303] rounded-2xl flex flex-col pb-2">
-            <p className="text-center font-inter font-bold text-3xl m-2">{username}</p>
+            <div className="flex flex-row m-auto">
+                <div className="flex flex-row items-center gap-1 shrink-0">
+                    {icons.map((item, index) => 
+                        // using regular images because nextjs ones don't have good pixel upscaling
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                            src={item}
+                            key={index}
+                            alt="Rank icon"
+                            className="w-7.5 object-contain flex-none"
+                        />
+                    )}
+                </div>
+                <p className="text-center font-inter font-bold text-3xl m-2">{username}</p>
+            </div>
             <TrophyDisplay amount={data.crownLevel.overall_trophies.obtained} total={data.crownLevel.overall_trophies.obtainable} color="yellow"/>
             <TrophyDisplay amount={data.crownLevel.skill_trophies.obtained} total={data.crownLevel.skill_trophies.obtainable} color="red"/>
             <TrophyDisplay amount={data.crownLevel.style_trophies.obtained} total={data.crownLevel.style_trophies.obtainable} color="purple"/>
