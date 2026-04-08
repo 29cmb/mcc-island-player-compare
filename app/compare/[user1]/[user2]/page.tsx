@@ -47,6 +47,7 @@ function ComparisonBox({ username, data }: { username: string, data: PlayerCompa
         icons.push(`https://islandcdn.themysterys.com/ranks/${highestRank.toLowerCase()}.png`)
     }
     icons.push(`https://islandcdn.themysterys.com/icons/crowns/${Math.min(Math.floor(data.crownLevel.levelData.level / 10), 10)}.png`)
+    const mccPlusIcon = data.mccPlusStatus ? `https://islandcdn.themysterys.com/ranks/plus_${data.mccPlusStatus.evolution + 1}_simple.png` : null
 
     return <div className="flex flex-col m-2">
         <Skin username={username} />
@@ -65,6 +66,11 @@ function ComparisonBox({ username, data }: { username: string, data: PlayerCompa
                     )}
                 </div>
                 <p className="text-center font-inter font-bold text-3xl m-2">{username}</p>
+                {mccPlusIcon && 
+                    <div className="flex flex-row items-center gap-1 shrink-0">
+                        <img src={mccPlusIcon} alt="MCC+ Icon" className="w-7.5 object-contain flex-none"/>
+                    </div>
+                }
             </div>
             <TrophyDisplay amount={data.crownLevel.overall_trophies.obtained} total={data.crownLevel.overall_trophies.obtainable} color="yellow"/>
             <TrophyDisplay amount={data.crownLevel.skill_trophies.obtained} total={data.crownLevel.skill_trophies.obtainable} color="red"/>
