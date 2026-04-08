@@ -7,5 +7,8 @@ export default function Skin(props: { username: string, height?: number, width?:
         skinUrl={`https://minotar.net/skin/${props.username}`}
         height={props.height || 400}
         width={props.width || 300}
+        onReady={({ viewer }) => {
+            viewer.controls.enableZoom = false
+        }}
     />
 }

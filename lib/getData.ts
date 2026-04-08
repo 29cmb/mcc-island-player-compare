@@ -66,7 +66,64 @@ query playerData($player1: String!, $player2: String!) {
 }
 `
 
-const USE_TEST_DATA = false
+const TEST_DATA = {
+    data: {
+        player1: {
+            ranks: ["GRAND_CHAMP_SUPREME", "GRAND_CHAMP_ROYALE", "GRAND_CHAMP", "CHAMP"],
+            mccPlusStatus: {
+                evolution: 1
+            },
+            crownLevel: {
+                levelData: {
+                    level: 73
+                },
+                overall_trophies: {
+                    obtained: 1,
+                    obtainable: 2
+                },
+                skill_trophies: {
+                    obtained: 1,
+                    obtainable: 2,
+                },
+                style_trophies: {
+                    obtained: 1,
+                    obtainable: 2,
+                },
+                angler_trophies: {
+                    obtained: 1,
+                    obtainable: 2,
+                }
+            }
+        },
+        player2: {
+            ranks: ["CONTESTANT", "GRAND_CHAMP_SUPREME", "GRAND_CHAMP_ROYALE", "GRAND_CHAMP", "CHAMP"],
+            mccPlusStatus: {
+                evolution: 1
+            },
+            crownLevel: {
+                levelData: {
+                    level: 109
+                },
+                overall_trophies: {
+                    obtained: 2,
+                    obtainable: 2
+                },
+                skill_trophies: {
+                    obtained: 2,
+                    obtainable: 2,
+                },
+                style_trophies: {
+                    obtained: 2,
+                    obtainable: 2,
+                },
+                angler_trophies: {
+                    obtained: 2,
+                    obtainable: 2,
+                }
+            }
+        }
+    }
+}
 
 export default async function getData(user1: string, user2: string): Promise<{ success: boolean } & ({ code: number } | { data: ComparisonData })> {
     if(!process.env.NOXCREW_API_KEY) {
@@ -75,65 +132,8 @@ export default async function getData(user1: string, user2: string): Promise<{ s
 
     let mccIslandData
     try {
-        if(USE_TEST_DATA) {
-            mccIslandData = {
-                data: {
-                    player1: {
-                        ranks: ["GRAND_CHAMP_SUPREME", "GRAND_CHAMP_ROYALE", "GRAND_CHAMP", "CHAMP"],
-                        mccPlusStatus: {
-                            evolution: 1
-                        },
-                        crownLevel: {
-                            levelData: {
-                                level: 73
-                            },
-                            overall_trophies: {
-                                obtained: 1,
-                                obtainable: 2
-                            },
-                            skill_trophies: {
-                                obtained: 1,
-                                obtainable: 2,
-                            },
-                            style_trophies: {
-                                obtained: 1,
-                                obtainable: 2,
-                            },
-                            angler_trophies: {
-                                obtained: 1,
-                                obtainable: 2,
-                            }
-                        }
-                    },
-                    player2: {
-                        ranks: ["CONTESTANT", "GRAND_CHAMP_SUPREME", "GRAND_CHAMP_ROYALE", "GRAND_CHAMP", "CHAMP"],
-                        mccPlusStatus: {
-                            evolution: 1
-                        },
-                        crownLevel: {
-                            levelData: {
-                                level: 109
-                            },
-                            overall_trophies: {
-                                obtained: 2,
-                                obtainable: 2
-                            },
-                            skill_trophies: {
-                                obtained: 2,
-                                obtainable: 2,
-                            },
-                            style_trophies: {
-                                obtained: 2,
-                                obtainable: 2,
-                            },
-                            angler_trophies: {
-                                obtained: 2,
-                                obtainable: 2,
-                            }
-                        }
-                    }
-                }
-            }
+        if(process.env.NODE_ENV == "development") {
+            mccIslandData = TEST_DATA
         } else {
             mccIslandData = await fetch("https://api.mccisland.net/graphql", {
                 method: "POST",

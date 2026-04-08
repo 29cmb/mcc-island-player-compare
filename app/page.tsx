@@ -2,8 +2,7 @@
 
 import { BorderButton } from "@/components/BorderButton"
 import Image from "next/image"
-import { useRef, useState } from "react"
-import { useRouter } from "next/router"
+import { useRef } from "react"
 import { redirect } from "next/navigation"
 export default function Home() {
   const player1Input = useRef<HTMLInputElement>(null)
