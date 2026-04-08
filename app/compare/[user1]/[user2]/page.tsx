@@ -1,3 +1,4 @@
+import FanojugSkin from "@/components/FanojugSkin"
 import Skin from "@/components/Skin"
 import getData, { PlayerComparisonData, ResponseCodes, SuccessfulComparisonDataResponse, UnsuccessfulComparisonDataResponse } from "@/lib/getData"
 import Image from "next/image"
@@ -50,7 +51,7 @@ function ComparisonBox({ username, data }: { username: string, data: PlayerCompa
     const mccPlusIcon = data.mccPlusStatus ? `https://islandcdn.themysterys.com/ranks/plus_${data.mccPlusStatus.evolution + 1}_simple.png` : null
 
     return <div className="flex flex-col m-2">
-        <Skin username={username} />
+        {username == "fanojug" ? <FanojugSkin/> : <Skin username={username} />}
         <div className="bg-[#030303] rounded-2xl flex flex-col pb-2">
             <div className="flex flex-row m-auto">
                 <div className="flex flex-row items-center gap-1 shrink-0">
