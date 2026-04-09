@@ -18,7 +18,8 @@ const RankPriorities = {
 }
 
 const SkinEasterEggs: { [name: string]: string } = {
-    "fanojug": "/FanojuygPlush.gif"
+    "fanojug": "/FanojuygPlush.gif",
+    "nibbl_z": "/RalseiPlush.gif"
 }
 
 export default function CompareViewClient({ user1, user2, data }: { user1: string, user2: string, data: ComparisonData }) {
