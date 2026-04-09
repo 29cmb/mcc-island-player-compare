@@ -3,7 +3,7 @@ import Skin from "@/components/Skin"
 import SkinOverride from "@/components/SkinOverride"
 import { ComparisonData, PlayerComparisonData } from "@/lib/getData"
 import Image from "next/image"
-import { Dispatch, SetStateAction, useRef, useState } from "react"
+import { Dispatch, ReactNode, SetStateAction, useRef, useState } from "react"
 import { redirect } from "next/navigation"
 
 const RankPriorities = {
@@ -29,9 +29,12 @@ export default function CompareViewClient({ user1, user2, data }: { user1: strin
             <TopbarBox username={user1} state={playerSearchBoxState} index={1} otherUser={user2}/>
             <TopbarBox username={user2} state={playerSearchBoxState} index={2} otherUser={user1}/>
         </div>
-        <div className="flex mx-auto">
-            <ComparisonBox username={user1} data={data.player1}/>
-            <ComparisonBox username={user2} data={data.player2}/>
+        <div className="flex flex-col mx-auto items-center">
+            <div className="flex flex-row">
+                <PlayerComparisonBox username={user1} data={data.player1}/>
+                <PlayerComparisonBox username={user2} data={data.player2}/>
+            </div>
+            <ComparisonBreakdown user1={user1} user2={user2} data={data}/>
         </div>
     </>
 }
@@ -65,7 +68,7 @@ function TopbarBox({ username, state, index, otherUser }: { username: string, st
     </div>
 }
 
-function ComparisonBox({ username, data }: { username: string, data: PlayerComparisonData }) {
+function PlayerComparisonBox({ username, data }: { username: string, data: PlayerComparisonData }) {
     const icons = []
     if(data.ranks.length == 0) {
         icons.push("https://islandcdn.themysterys.com/ranks/default.png")
@@ -80,7 +83,7 @@ function ComparisonBox({ username, data }: { username: string, data: PlayerCompa
 
     return <div className="flex flex-col m-2">
         {SkinEasterEggs[username] ? <SkinOverride image={SkinEasterEggs[username]}/> : <Skin username={username} />}
-        <div className="bg-[#030303] rounded-2xl flex flex-col pb-2">
+        <div className="bg-[#060606] rounded-2xl flex flex-col pb-2">
             <div className="flex flex-row m-auto">
                 <div className="flex flex-row items-center gap-1 shrink-0">
                     {icons.map((item, index) => 
@@ -122,4 +125,99 @@ function TrophyDisplay({ amount, total, color }: { amount: number, total: number
             <p className="text-gray-600 text-[10px]">/ {total}</p>
         </div>
     </div>
+}
+
+const Tabs: { [id: string]: (user1: string, user2: string, data: ComparisonData) => ReactNode } = {
+    ["skill"]: (user1, user2, data) => {
+        return <div className="grid grid-cols-2 gap-3 p-4 h-full overflow-x-hidden overflow-y-scroll recolored-scrollbar">
+            <GameCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box" badgeKey="battle_box_quads"/>
+            <GameCard image="https://islandcdn.themysterys.com/games/sky_battle/icon.png" user1={user1} user2={user2} data={data} name="Sky Battle" badgeKey="sky_battle_quads"/>
+            <GameCard image="https://islandcdn.themysterys.com/games/parkour_warrior/icon.png" user1={user1} user2={user2} data={data} name="Parkour Warrior" badgeKey="pw"/>
+            <GameCard image="https://islandcdn.themysterys.com/games/dynaball/icon.png" user1={user1} user2={user2} data={data} name="Dynaball" badgeKey="dynaball"/>
+            <GameCard image="https://islandcdn.themysterys.com/games/tgttos/icon.png" user1={user1} user2={user2} data={data} name="TGTTOS" badgeKey="tgttos"/>
+            <GameCard image="https://islandcdn.themysterys.com/games/hitw/icon.png" user1={user1} user2={user2} data={data} name="Hole In The Wall" badgeKey="hole_in_the_wall"/>
+            <GameCard image="https://islandcdn.themysterys.com/games/rocket_spleef/icon.png" user1={user1} user2={user2} data={data} name="Rocket Spleef Rush" badgeKey="hole_in_the_wall"/>
+        </div>
+    },
+    ["style"]: () => {
+        return <div className="flex flex-col items-center">
+            <p className="font-bold mt-2">Coming Soon™️</p>
+        </div>
+    },
+    ["fishing"]: () => {
+        return <div className="flex flex-col items-center">
+            <p className="font-bold mt-2">Coming Soon™️</p>
+        </div>
+    }
+}
+
+function ComparisonBreakdown({ user1, user2, data }: { user1: string, user2: string, data: ComparisonData }) {
+    const tabState = useState<string>("skill")
+    const [selectedTab] = tabState
+
+    return <div className="flex flex-col mx-auto w-full h-auto rounded-2xl">
+        <div className="w-full flex flex-row h-14 items-end">
+            <TrophyTabIcon id="skill" trophyColor="red" tabState={tabState}/>
+            <TrophyTabIcon id="style" trophyColor="purple" tabState={tabState}/>
+            <TrophyTabIcon id="fishing" trophyColor="blue" tabState={tabState}/>
+        </div>
+        <div className="w-full h-[33vh] mb-10 rounded-b-2xl rounded-tr-2xl bg-[#060606]">
+            {Tabs[selectedTab](user1, user2, data)}
+        </div>
+    </div>
+}
+
+function TrophyTabIcon({ id, trophyColor, tabState }: { id: string, trophyColor: string, tabState: [string, Dispatch<SetStateAction<string>>] }) {
+    const [selectedTab, setSelectedTab] = tabState
+
+    return <button className="rounded-t-2xl transition-all" style={{ backgroundColor: selectedTab == id ? "#060606" : "#030303" }} onClick={() => setSelectedTab(id)}>
+        <img alt="Trophy Icon" className="p-2 transition-all" style={{ width: selectedTab == id ? "56px" : "48px", filter: selectedTab != id ? "brightness(50%)": "none" }} src={`https://islandcdn.themysterys.com/icons/trophies/${trophyColor}.png`}/>
+    </button>
+}
+
+function GameCard({ image, name, user1, user2, data, badgeKey }: { image: string, name: string, user1: string, user2: string, data: ComparisonData, badgeKey: string }) {
+    const [player1Trophies, totalGameTrophies] = getPlayerTrophies(data.player1, badgeKey)
+    const [player2Trophies] = getPlayerTrophies(data.player2, badgeKey)
+
+    return <div className="w-full h-full bg-[#0c0c0c] rounded-2xl p-2">
+        <div className="flex flex-row items-center gap-2 m-1">
+            <img src={image} alt="Game image" className="w-12"/>
+            <p className="font-bold text-3xl pr-3">{name}</p>
+        </div>
+        <div className="flex flex-row items-center m-1 mt-2">
+            <img src="https://islandcdn.themysterys.com/icons/trophies/red.png" className="w-8" alt="Skill trophy icon"/>
+            <p className="font-bold text-xl px-2">{totalGameTrophies}</p>
+        </div>
+        <div className="flex flex-row items-center gap-1">
+            <div className="flex flex-row items-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `conic-gradient(#2f2f2f 0% ${(1 - (player1Trophies / totalGameTrophies)) * 100}%, lime ${(1 - (player1Trophies / totalGameTrophies)) * 100}% 100%)` }}>
+                    <img className="justify-center m-auto border border-black" src={`https://minotar.net/helm/${user1}/20.png`} alt="Player head"/>
+                </div>
+                <img src="https://islandcdn.themysterys.com/icons/trophies/red.png" className="w-5 ml-1" alt="Skill trophy icon"/>
+                <p className="m-1">{player1Trophies}</p>
+            </div>
+            <div className="flex flex-row items-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `conic-gradient(#2f2f2f 0% ${(1 - (player2Trophies / totalGameTrophies)) * 100}%, lime ${(1 - (player2Trophies / totalGameTrophies)) * 100}% 100%)` }}>
+                    <img className="justify-center m-auto border border-black" src={`https://minotar.net/helm/${user2}/20.png`} alt="Player head"/>
+                </div>
+                <img src="https://islandcdn.themysterys.com/icons/trophies/red.png" className="w-5 ml-1" alt="Skill trophy icon"/>
+                <p className="m-1">{player2Trophies}</p>
+            </div>
+        </div>
+    </div>
+}
+
+function getPlayerTrophies(data: PlayerComparisonData, key: string) {
+    const gameBadges = data.badges.filter(value => value.badge.goal.key?.startsWith(key))
+    const totalTrophies = gameBadges.reduce((partialSum, currentValue) => {
+        return partialSum + currentValue.badge.stages.reduce((partialSum2, currentValue2) => partialSum2 + currentValue2.trophies, 0)
+    }, 0)
+
+    const playerEarnedTrophies = gameBadges.reduce((partialSum, currentValue) => {
+        return partialSum + currentValue.stageProgress.reduce((partialSum2, currentValue2) => {
+            return partialSum2 + (currentValue2.progress.obtained >= currentValue2.progress.obtainable ? currentValue.badge.stages[currentValue2.stage - 1].trophies : 0)
+        }, 0)
+    }, 0)
+
+    return [playerEarnedTrophies,totalTrophies]
 }

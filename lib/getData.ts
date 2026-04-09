@@ -1,3 +1,5 @@
+import * as fs from 'fs'
+
 export const ResponseCodes = {
     INVALID_SERVER_CREDENTIALS: 0,
     PLAYER_LOOKUP_FAILED: 1,
@@ -7,123 +9,65 @@ export const ResponseCodes = {
 const query: string = `
 query playerData($player1: String!, $player2: String!) {
   player1: playerByUsername(username: $player1) {
-    ranks
-    mccPlusStatus {
-      evolution
-    }
-    crownLevel {
-      levelData {
-        level
-      }
-      overall_trophies: trophies {
-        obtained
-        obtainable
-      }
-
-      skill_trophies: trophies(category: SKILL) {
-        obtained
-        obtainable
-      }
-      style_trophies: trophies(category: STYLE) {
-        obtained
-        obtainable
-      }
-      angler_trophies: trophies(category: ANGLER) {
-        obtained
-        obtainable
-      }
-    }
+    ...PlayerFields
   }
 
   player2: playerByUsername(username: $player2) {
-    ranks
-    mccPlusStatus {
-      evolution
+    ...PlayerFields
+  }
+}
+
+fragment PlayerFields on Player {
+  ranks
+  mccPlusStatus {
+    evolution
+  }
+  badges {
+    badge {
+      goal {
+        ... on Statistic {
+          key
+        }
+      }
+      stages {
+        trophies
+      }
     }
-    crownLevel {
-      levelData {
-        level
-      }
-      overall_trophies: trophies {
-        obtained
+    stageProgress {
+      stage
+      progress {
         obtainable
-      }
-      
-      skill_trophies: trophies(category: SKILL) {
         obtained
-        obtainable
-      }
-      style_trophies: trophies(category: STYLE) {
-        obtained
-        obtainable
-      }
-      angler_trophies: trophies(category: ANGLER) {
-        obtained
-        obtainable
       }
     }
   }
+  crownLevel {
+    levelData {
+      level
+    }
+    overall_trophies: trophies {
+      ...TrophyCounts
+    }
+    
+    skill_trophies: trophies(category: SKILL) {
+      ...TrophyCounts
+    }
+    style_trophies: trophies(category: STYLE) {
+      ...TrophyCounts
+    }
+    angler_trophies: trophies(category: ANGLER) {
+      ...TrophyCounts
+    }
+  }
+}
+
+fragment TrophyCounts on TrophyData {
+  obtained
+  obtainable
 }
 `
 
-const TEST_DATA = {
-    data: {
-        player1: {
-            ranks: ["GRAND_CHAMP_SUPREME", "GRAND_CHAMP_ROYALE", "GRAND_CHAMP", "CHAMP"],
-            mccPlusStatus: {
-                evolution: 1
-            },
-            crownLevel: {
-                levelData: {
-                    level: 73
-                },
-                overall_trophies: {
-                    obtained: 1,
-                    obtainable: 2
-                },
-                skill_trophies: {
-                    obtained: 1,
-                    obtainable: 2,
-                },
-                style_trophies: {
-                    obtained: 1,
-                    obtainable: 2,
-                },
-                angler_trophies: {
-                    obtained: 1,
-                    obtainable: 2,
-                }
-            }
-        },
-        player2: {
-            ranks: ["CONTESTANT", "GRAND_CHAMP_SUPREME", "GRAND_CHAMP_ROYALE", "GRAND_CHAMP", "CHAMP"],
-            mccPlusStatus: {
-                evolution: 1
-            },
-            crownLevel: {
-                levelData: {
-                    level: 109
-                },
-                overall_trophies: {
-                    obtained: 2,
-                    obtainable: 2
-                },
-                skill_trophies: {
-                    obtained: 2,
-                    obtainable: 2,
-                },
-                style_trophies: {
-                    obtained: 2,
-                    obtainable: 2,
-                },
-                angler_trophies: {
-                    obtained: 2,
-                    obtainable: 2,
-                }
-            }
-        }
-    }
-}
+const TEST_DATA = JSON.parse(fs.readFileSync("test_data.json", "utf-8"))
 
 export default async function getData(user1: string, user2: string): Promise<{ success: boolean } & ({ code: number } | { data: ComparisonData })> {
     if(!process.env.NOXCREW_API_KEY) {
@@ -185,6 +129,7 @@ export type ComparisonData = {
 
 export type PlayerComparisonData = {
     ranks: Rank[]
+    badges: Badge[]
     mccPlusStatus?: {
         evolution: number
     }
@@ -209,6 +154,24 @@ export type PlayerComparisonData = {
             obtainable: number,
         }
     }
+}
+
+export type Badge = {
+    badge: {
+        goal: {
+            key?: string
+        },
+        stages: {
+            trophies: number
+        }[]
+    },
+    stageProgress: {
+        stage: number,
+        progress: {
+            obtainable: number,
+            obtained: number
+        }
+    }[]
 }
 
 type Rank = "NOXCREW" | "GRAND_CHAMP_SUPREME" | "GRAND_CHAMP_ROYALE" | "GRAND_CHAMP" | "CHAMP" | "CONTESTANT" | "CREATOR"
