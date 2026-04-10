@@ -223,9 +223,9 @@ function StyleCard({ image, name, user1, user2, data }: { image: string, name: s
     const styleTrophies = getCollectionTotalStyleTrophies(data.player1, name)
     const bonusTrophies = getCollectionTotalBonusTrophies(data.player1, name)
     const reputation = getCollectionTotalReputation(data.player1, name)
-    const chromas = getCollectionTotalChromaTrophies(data.player1, name)
-
+    
     const isBonus = styleTrophies == 0
+    const chromas = getCollectionTotalChromaTrophies(data.player1, name, isBonus)
 
     const [player1StyleTrophies, player1Rep, player1Chromas, player1BonusTrophies] = getPlayerStyleTrophies(data.player1, name)
     const [player2StyleTrophies, player2Rep, player2Chromas, player2BonusTrophies] = getPlayerStyleTrophies(data.player2, name)
@@ -243,7 +243,7 @@ function StyleCard({ image, name, user1, user2, data }: { image: string, name: s
         image={image}
         name={name} 
         trophyColor={!isBonus ? "purple" : "silver"}
-        totalTrophies={!isBonus ? styleTrophies + reputation + chromas : bonusTrophies}
+        totalTrophies={(!isBonus ? styleTrophies + reputation : bonusTrophies) + chromas}
     >
         <div className="flex flex-row items-center gap-1">
             <div className="flex flex-row items-center">
@@ -329,10 +329,10 @@ function getCollectionTotalBonusTrophies(data: PlayerComparisonData, collection:
     }, 0)
 }
 
-function getCollectionTotalChromaTrophies(data: PlayerComparisonData, collection: string) {
+function getCollectionTotalChromaTrophies(data: PlayerComparisonData, collection: string, isBonus: boolean) {
     const cosmetics = data.collections.cosmetics.filter(item => item.cosmetic.collection == collection)
     return cosmetics.reduce((partialSum, currentValue) => 
-        partialSum + (currentValue.cosmetic.colorable && !currentValue.cosmetic.isBonusTrophies && currentValue.cosmetic.trophies != 0 ? 10 : 0)
+        partialSum + (currentValue.cosmetic.colorable && (!currentValue.cosmetic.isBonusTrophies || isBonus) && currentValue.cosmetic.trophies != 0 ? 10 : 0)
     , 0)
 }
 
@@ -352,7 +352,7 @@ function getPlayerStyleTrophies(data: PlayerComparisonData, collection: string) 
         partialSum + (currentValue.cosmetic.royalReputation == null ? 0 : currentValue.donationsMade * currentValue.cosmetic.royalReputation.reputationAmount)
     , 0)
     const chromas = cosmetics.reduce((partialSum, currentValue) => 
-        partialSum + (currentValue.cosmetic.colorable && !currentValue.cosmetic.isBonusTrophies && currentValue.chromaPacks.length == 4 ? 10 : 0)
+        partialSum + (currentValue.cosmetic.colorable && (!currentValue.cosmetic.isBonusTrophies || trophies == 0) && currentValue.chromaPacks.length == 4 ? 10 : 0)
     , 0)
     const bonus = cosmetics.reduce((partialSum, currentValue) => 
         partialSum + (currentValue.cosmetic.isBonusTrophies && currentValue.owned ? currentValue.cosmetic.trophies : 0)
