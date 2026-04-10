@@ -163,7 +163,7 @@ const Tabs: { [id: string]: (user1: string, user2: string, data: ComparisonData)
 }
 
 function ComparisonBreakdown({ user1, user2, data }: { user1: string, user2: string, data: ComparisonData }) {
-    const tabState = useState<string>("style")
+    const tabState = useState<string>("skill")
     const [selectedTab] = tabState
 
     return <div className="flex flex-col mx-auto w-full h-auto rounded-2xl">
