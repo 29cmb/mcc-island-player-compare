@@ -123,7 +123,7 @@ function PlayerComparisonBox({ username, data, index }: { username: string, data
                 <div>
                     <div className="flex flex-row items-center justify-center">
                         <img src="https://islandcdn.themysterys.com/icons/warnings/orange.png" alt="Warning" width={40}></img>
-                        <p className="text-3xl m-3 text-[#ca840b] font-bold">Warning!</p>
+                        <p className="text-3xl m-3 text-[#df910a] font-bold">Warning!</p>
                     </div>
                     <p className="text-center text-xl">This player does not have these APIs enabled:</p>
                     <p className="text-center text-gray-400">{disabledAPIs.join(", ")}</p>
@@ -255,8 +255,8 @@ function GameCard({ image, name, user1, user2, data, badgeKey }: { image: string
 function StyleCard({ image, name, user1, user2, data }: { image: string, name: string, user1: string, user2: string, data: ComparisonData }) {
     let templatePlayer: PlayerComparisonData
 
-    if(data.player1 && !data.player2) templatePlayer = data.player1
-    else if(data.player2 && !data.player1) templatePlayer = data.player2
+    if(data.player1.badges && !data.player2.badges) templatePlayer = data.player1
+    else if(data.player2.badges && !data.player1.badges) templatePlayer = data.player2
     else {
         const player1Cosmetics = data.player1.collections?.cosmetics.filter(c => c.cosmetic.collection == name)
         const player2Cosmetics = data.player2.collections?.cosmetics.filter(c => c.cosmetic.collection == name)
