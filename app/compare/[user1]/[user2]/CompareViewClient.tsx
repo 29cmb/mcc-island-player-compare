@@ -304,7 +304,7 @@ function getCollectionTotalStyleTrophies(data: PlayerComparisonData, collection:
 function getCollectionTotalChromaTrophies(data: PlayerComparisonData, collection: string) {
     const cosmetics = data.collections.cosmetics.filter(item => item.cosmetic.collection == collection)
     return cosmetics.reduce((partialSum, currentValue) => 
-        partialSum + (currentValue.cosmetic.colorable ? 10 : 0)
+        partialSum + (currentValue.cosmetic.colorable && !currentValue.cosmetic.isBonusTrophies ? 10 : 0)
     , 0)
 }
 
