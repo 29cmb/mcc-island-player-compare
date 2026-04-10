@@ -324,7 +324,7 @@ function getPlayerStyleTrophies(data: PlayerComparisonData, collection: string) 
         partialSum + (currentValue.cosmetic.royalReputation == null ? 0 : currentValue.donationsMade * currentValue.cosmetic.royalReputation.reputationAmount)
     , 0)
     const chromas = cosmetics.reduce((partialSum, currentValue) => 
-        partialSum + (currentValue.cosmetic.colorable && currentValue.chromaPacks.length == 4 ? 10 : 0)
+        partialSum + (currentValue.cosmetic.colorable && !currentValue.cosmetic.isBonusTrophies && currentValue.chromaPacks.length == 4 ? 10 : 0)
     , 0)
 
     return [trophies, reputation, chromas]
