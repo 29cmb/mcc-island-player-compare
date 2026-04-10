@@ -146,13 +146,6 @@ const Tabs: { [id: string]: (user1: string, user2: string, data: ComparisonData)
                 const snakeCaseCollection = element.toLowerCase().replaceAll(" ", "_")
                 return <StyleCard image={`https://islandcdn.themysterys.com/icons/wardrobe/${snakeCaseCollection}.png`} key={index} name={element} user1={user1} user2={user2} data={data} />
             })}
-            {/* <StyleCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box"/>
-            <StyleCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box"/>
-            <StyleCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box"/>
-            <StyleCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box"/>
-            <StyleCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box"/>
-            <StyleCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box"/>
-            <StyleCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box"/> */}
         </div>
     },
     ["fishing"]: () => {
@@ -220,24 +213,32 @@ function GameCard({ image, name, user1, user2, data, badgeKey }: { image: string
 }
 
 function StyleCard({ image, name, user1, user2, data }: { image: string, name: string, user1: string, user2: string, data: ComparisonData }) {
-    const styleTrophies = getCollectionTotalStyleTrophies(data.player1, name)
-    const bonusTrophies = getCollectionTotalBonusTrophies(data.player1, name)
-    const reputation = getCollectionTotalReputation(data.player1, name)
+    const player1Cosmetics = data.player1.collections.cosmetics.filter(c => c.cosmetic.collection == name)
+    const player2Cosmetics = data.player2.collections.cosmetics.filter(c => c.cosmetic.collection == name)
+
+    const player1TotalCollectionTrophies = player1Cosmetics.reduce((partialSum, currentValue) => 
+        partialSum + currentValue.cosmetic.trophies
+    ,0)
+    const player2TotalCollectionTrophies = player2Cosmetics.reduce((partialSum, currentValue) => 
+        partialSum + currentValue.cosmetic.trophies
+    ,0)
+
+    // this is because cosmetics can be unlisted, so just pick the player who's api reveals the most trophies in the collection
+    const templatePlayer = player1TotalCollectionTrophies > player2TotalCollectionTrophies ? data.player1 : data.player2
+
+    const styleTrophies = getCollectionTotalStyleTrophies(templatePlayer, name)
+    const bonusTrophies = getCollectionTotalBonusTrophies(templatePlayer, name)
+    const reputation = getCollectionTotalReputation(templatePlayer, name)
     
     const isBonus = styleTrophies == 0
-    const chromas = getCollectionTotalChromaTrophies(data.player1, name, isBonus)
+    const chromas = getCollectionTotalChromaTrophies(templatePlayer, name, isBonus)
 
     const [player1StyleTrophies, player1Rep, player1Chromas, player1BonusTrophies] = getPlayerStyleTrophies(data.player1, name)
     const [player2StyleTrophies, player2Rep, player2Chromas, player2BonusTrophies] = getPlayerStyleTrophies(data.player2, name)
 
-    const player1StyleTrophyPercentage = player1StyleTrophies / styleTrophies
-    const player2StyleTrophyPercentage = player2StyleTrophies / styleTrophies
-
-    const player1ReputationPercentage = player1Rep / reputation
-    const player2ReputationPercentage = player2Rep / reputation
-
-    const player1BonusTrophyPercentage = player1BonusTrophies / bonusTrophies
-    const player2BonusTrophyPercentage = player2BonusTrophies / bonusTrophies
+    const [player1StyleTrophyPercentage, player2StyleTrophyPercentage] = [player1StyleTrophies / styleTrophies, player2StyleTrophies / styleTrophies]
+    const [player1ReputationPercentage, player2ReputationPercentage] = [player1Rep / reputation, player2Rep / reputation]
+    const [player1BonusTrophyPercentage, player2BonusTrophyPercentage] = [player1BonusTrophies / bonusTrophies, player2BonusTrophies / bonusTrophies]
 
     return <StandardComparisonCard 
         image={image}
@@ -319,14 +320,9 @@ function getCollectionTotalStyleTrophies(data: PlayerComparisonData, collection:
 
 function getCollectionTotalBonusTrophies(data: PlayerComparisonData, collection: string) {
     const cosmetics = data.collections.cosmetics.filter(item => item.cosmetic.collection == collection)
-    return cosmetics.reduce((partialSum, currentValue) => {
-        let trophyPotential = 0
-        if(currentValue.cosmetic.isBonusTrophies) {
-            trophyPotential += currentValue.cosmetic.trophies
-        }
-
-        return partialSum + trophyPotential
-    }, 0)
+    return cosmetics.reduce((partialSum, currentValue) => 
+        partialSum + (currentValue.cosmetic.isBonusTrophies ? currentValue.cosmetic.trophies : 0)
+    , 0)
 }
 
 function getCollectionTotalChromaTrophies(data: PlayerComparisonData, collection: string, isBonus: boolean) {
