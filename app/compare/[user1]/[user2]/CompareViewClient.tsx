@@ -31,7 +31,7 @@ export default function CompareViewClient({ user1, user2, data }: { user1: strin
             <TopbarBox username={user2} data={data.player2} state={playerSearchBoxState} index={2} otherUser={user1}/>
         </div>
         <div className="flex flex-col mx-auto items-center">
-            <div className="flex flex-row">
+            <div className="flex flex-row items-stretch">
                 <PlayerComparisonBox username={user1} data={data.player1} index={1}/>
                 <PlayerComparisonBox username={user2} data={data.player2} index={2}/>
             </div>
@@ -94,9 +94,19 @@ function TopbarBox({ username, data, state, index, otherUser }: { username: stri
 }
 
 function PlayerComparisonBox({ username, data, index }: { username: string, data: PlayerComparisonData, index: number }) {
-    return <div className="flex flex-col my-2 mx-0.5 items-center">
-        {SkinEasterEggs[username] ? <SkinOverride image={SkinEasterEggs[username]}/> : <Skin username={username} />}
-        <div className="bg-[#060606] w-122.5 flex flex-col p-3" style={{ borderRadius: index == 1 ? "16px 0px 0px 16px" : "0px 16px 16px 0px" }}>
+    const disabledAPIs = []
+    if(data.collections == null) {
+        disabledAPIs.push("Collections")
+    }
+    if(data.badges == null) {
+        disabledAPIs.push("Badges")
+    }
+
+    return <div className="flex flex-col my-2 mx-0.5">
+        <div className="self-center">
+            {SkinEasterEggs[username] ? <SkinOverride image={SkinEasterEggs[username]}/> : <Skin username={username} />}
+        </div>
+        <div className="bg-[#060606] w-122.5 flex flex-col p-3 flex-1" style={{ borderRadius: index == 1 ? "16px 0px 0px 16px" : "0px 16px 16px 0px" }}>
             <div className="flex flex-row justify-center items-center">
                 <div className="flex flex-row items-center">
                     <img className="w-8.75 m-1" alt="Crown" src={`https://islandcdn.themysterys.com/icons/crowns/${Math.min(Math.floor(data.crownLevel.levelData.level / 10), 10)}.png`}/>
@@ -109,6 +119,16 @@ function PlayerComparisonBox({ username, data, index }: { username: string, data
                 <TrophyDisplay centered={true} amount={data.crownLevel.style_trophies.obtained} total={data.crownLevel.style_trophies.obtainable} color="purple"/>
                 <TrophyDisplay centered={true} amount={data.crownLevel.angler_trophies.obtained} total={data.crownLevel.angler_trophies.obtainable} color="blue"/>
             </div>
+            {disabledAPIs.length != 0 &&
+                <div>
+                    <div className="flex flex-row items-center justify-center">
+                        <img src="https://islandcdn.themysterys.com/icons/warnings/orange.png" alt="Warning" width={40}></img>
+                        <p className="text-3xl m-3 text-[#ca840b] font-bold">Warning!</p>
+                    </div>
+                    <p className="text-center text-xl">This player does not have these APIs enabled:</p>
+                    <p className="text-center text-gray-400">{disabledAPIs.join(", ")}</p>
+                </div>
+            }
         </div>
     </div>
 }
@@ -131,6 +151,13 @@ function TrophyDisplay({ amount, total, centered, color }: { amount: number, cen
 
 const Tabs: { [id: string]: (user1: string, user2: string, data: ComparisonData) => ReactNode } = {
     ["skill"]: (user1, user2, data) => {
+        if(data.player1.badges == null && data.player2.badges == null) {
+            return <div className="flex h-full flex-row justify-center items-center">
+                <img src="https://islandcdn.themysterys.com/icons/warnings/orange.png" className="m-2" alt="Warning" width={40}></img>
+                <p className="m-2 text-2xl">Neither players have the Badges API enabled!</p>
+            </div>
+        }
+
         return <div className="grid grid-cols-2 gap-3 p-4 h-full overflow-x-hidden overflow-y-scroll recolored-scrollbar">
             <GameCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box" badgeKey="battle_box_quads"/>
             <GameCard image="https://islandcdn.themysterys.com/games/sky_battle/icon.png" user1={user1} user2={user2} data={data} name="Sky Battle" badgeKey="sky_battle_quads"/>
@@ -142,16 +169,25 @@ const Tabs: { [id: string]: (user1: string, user2: string, data: ComparisonData)
         </div>
     },
     ["style"]: (user1, user2, data) => {
+        if(data.player1.collections == null && data.player2.collections == null) {
+            return <div className="flex h-full flex-row justify-center items-center">
+                <img src="https://islandcdn.themysterys.com/icons/warnings/orange.png" className="m-2" alt="Warning" width={40}></img>
+                <p className="m-2 text-2xl">Neither players have the Collections API enabled!</p>
+            </div>
+        }
+
+        const templatePlayer = data.player1.badges ? data.player1 : data.player2
+
         return <div className="grid grid-cols-2 gap-3 p-4 h-full overflow-x-hidden overflow-y-scroll recolored-scrollbar">
-            {getCollections(data.player1).map((element, index) => {
+            {getCollections(templatePlayer)!.map((element, index) => {
                 const snakeCaseCollection = element.toLowerCase().replaceAll(" ", "_")
                 return <StyleCard image={`https://islandcdn.themysterys.com/icons/wardrobe/${snakeCaseCollection}.png`} key={index} name={element} user1={user1} user2={user2} data={data} />
             })}
         </div>
     },
     ["fishing"]: () => {
-        return <div className="flex flex-col items-center">
-            <p className="font-bold mt-2">Coming Soon™️</p>
+        return <div className="flex h-full flex-row justify-center items-center">
+            <p className="font-bold mt-2 text-3xl">Coming Soon™️</p>
         </div>
     }
 }
@@ -181,8 +217,11 @@ function TrophyTabIcon({ id, trophyColor, tabState }: { id: string, trophyColor:
 }
 
 function GameCard({ image, name, user1, user2, data, badgeKey }: { image: string, name: string, user1: string, user2: string, data: ComparisonData, badgeKey: string }) {
-    const [player1Trophies, totalGameTrophies] = getPlayerTrophies(data.player1, badgeKey)
-    const [player2Trophies] = getPlayerTrophies(data.player2, badgeKey)
+    const templatePlayer = data.player1.badges ? data.player1 : data.player2
+    const totalGameTrophies = getTotalGameTrophies(templatePlayer, badgeKey) ?? 0
+
+    const player1Trophies = getPlayerBadgeTrophies(data.player1, badgeKey) ?? 0
+    const player2Trophies = getPlayerBadgeTrophies(data.player2, badgeKey) ?? 0
 
     return <StandardComparisonCard 
         image={image}
@@ -214,18 +253,25 @@ function GameCard({ image, name, user1, user2, data, badgeKey }: { image: string
 }
 
 function StyleCard({ image, name, user1, user2, data }: { image: string, name: string, user1: string, user2: string, data: ComparisonData }) {
-    const player1Cosmetics = data.player1.collections.cosmetics.filter(c => c.cosmetic.collection == name)
-    const player2Cosmetics = data.player2.collections.cosmetics.filter(c => c.cosmetic.collection == name)
+    let templatePlayer: PlayerComparisonData
 
-    const player1TotalCollectionTrophies = player1Cosmetics.reduce((partialSum, currentValue) => 
-        partialSum + currentValue.cosmetic.trophies
-    ,0)
-    const player2TotalCollectionTrophies = player2Cosmetics.reduce((partialSum, currentValue) => 
-        partialSum + currentValue.cosmetic.trophies
-    ,0)
+    if(data.player1 && !data.player2) templatePlayer = data.player1
+    else if(data.player2 && !data.player1) templatePlayer = data.player2
+    else {
+        const player1Cosmetics = data.player1.collections?.cosmetics.filter(c => c.cosmetic.collection == name)
+        const player2Cosmetics = data.player2.collections?.cosmetics.filter(c => c.cosmetic.collection == name)
+    
+        const player1TotalCollectionTrophies = player1Cosmetics?.reduce((partialSum, currentValue) => 
+            partialSum + currentValue.cosmetic.trophies
+        ,0) ?? 0
+        const player2TotalCollectionTrophies = player2Cosmetics?.reduce((partialSum, currentValue) => 
+            partialSum + currentValue.cosmetic.trophies
+        ,0) ?? 0
+
+        templatePlayer = player1TotalCollectionTrophies > player2TotalCollectionTrophies ? data.player1 : data.player2
+    }
 
     // this is because cosmetics can be unlisted, so just pick the player who's api reveals the most trophies in the collection
-    const templatePlayer = player1TotalCollectionTrophies > player2TotalCollectionTrophies ? data.player1 : data.player2
 
     const styleTrophies = getCollectionTotalStyleTrophies(templatePlayer, name)
     const bonusTrophies = getCollectionTotalBonusTrophies(templatePlayer, name)
@@ -234,8 +280,8 @@ function StyleCard({ image, name, user1, user2, data }: { image: string, name: s
     const isBonus = styleTrophies == 0
     const chromas = getCollectionTotalChromaTrophies(templatePlayer, name, isBonus)
 
-    const [player1StyleTrophies, player1Rep, player1Chromas, player1BonusTrophies] = getPlayerStyleTrophies(data.player1, name)
-    const [player2StyleTrophies, player2Rep, player2Chromas, player2BonusTrophies] = getPlayerStyleTrophies(data.player2, name)
+    const [player1StyleTrophies, player1Rep, player1Chromas, player1BonusTrophies] = getPlayerStyleTrophies(data.player1, name) ?? [0,0,0,0]
+    const [player2StyleTrophies, player2Rep, player2Chromas, player2BonusTrophies] = getPlayerStyleTrophies(data.player2, name) ?? [0,0,0,0]
 
     const [player1StyleTrophyPercentage, player2StyleTrophyPercentage] = [player1StyleTrophies / styleTrophies, player2StyleTrophies / styleTrophies]
     const [player1ReputationPercentage, player2ReputationPercentage] = [player1Rep / reputation, player2Rep / reputation]
@@ -304,11 +350,11 @@ function StandardComparisonCard(
 }
 
 function getCollections(data: PlayerComparisonData) {
-    return [...new Set(data.collections.cosmetics.map(c => c.cosmetic.collection))]
+    return [...new Set(data.collections!.cosmetics.map(c => c.cosmetic.collection))]
 }
 
 function getCollectionTotalStyleTrophies(data: PlayerComparisonData, collection: string) {
-    const cosmetics = data.collections.cosmetics.filter(item => item.cosmetic.collection == collection)
+    const cosmetics = data.collections!.cosmetics.filter(item => item.cosmetic.collection == collection)
     return cosmetics.reduce((partialSum, currentValue) => {
         let trophyPotential = 0
         if(!currentValue.cosmetic.isBonusTrophies) {
@@ -320,27 +366,29 @@ function getCollectionTotalStyleTrophies(data: PlayerComparisonData, collection:
 }
 
 function getCollectionTotalBonusTrophies(data: PlayerComparisonData, collection: string) {
-    const cosmetics = data.collections.cosmetics.filter(item => item.cosmetic.collection == collection)
+    const cosmetics = data.collections!.cosmetics.filter(item => item.cosmetic.collection == collection)
     return cosmetics.reduce((partialSum, currentValue) => 
         partialSum + (currentValue.cosmetic.isBonusTrophies ? currentValue.cosmetic.trophies : 0)
     , 0)
 }
 
 function getCollectionTotalChromaTrophies(data: PlayerComparisonData, collection: string, isBonus: boolean) {
-    const cosmetics = data.collections.cosmetics.filter(item => item.cosmetic.collection == collection)
+    const cosmetics = data.collections!.cosmetics.filter(item => item.cosmetic.collection == collection)
     return cosmetics.reduce((partialSum, currentValue) => 
         partialSum + (currentValue.cosmetic.colorable && (!currentValue.cosmetic.isBonusTrophies || isBonus) && currentValue.cosmetic.trophies != 0 ? 10 : 0)
     , 0)
 }
 
 function getCollectionTotalReputation(data: PlayerComparisonData, collection: string) {
-    const cosmetics = data.collections.cosmetics.filter(item => item.cosmetic.collection == collection)
+    const cosmetics = data.collections!.cosmetics.filter(item => item.cosmetic.collection == collection)
     return cosmetics.reduce((partialSum, currentValue) => 
         partialSum + (currentValue.cosmetic.royalReputation ? currentValue.cosmetic.royalReputation.reputationAmount * currentValue.cosmetic.royalReputation.donationLimit : 0)
     , 0)
 }
 
 function getPlayerStyleTrophies(data: PlayerComparisonData, collection: string) {
+    if(data.collections == null) return null
+
     const cosmetics = data.collections.cosmetics.filter(item => item.cosmetic.collection == collection)
     const trophies = cosmetics.reduce((partialSum, currentValue) =>
         partialSum + (currentValue.owned && !currentValue.cosmetic.isBonusTrophies ? currentValue.cosmetic.trophies : 0)
@@ -358,17 +406,24 @@ function getPlayerStyleTrophies(data: PlayerComparisonData, collection: string) 
     return [trophies, reputation, chromas, bonus]
 }
 
-function getPlayerTrophies(data: PlayerComparisonData, key: string) {
-    const gameBadges = data.badges.filter(value => value.badge.goal.key?.startsWith(key))
-    const totalTrophies = gameBadges.reduce((partialSum, currentValue) => {
+function getTotalGameTrophies(data: PlayerComparisonData, key: string) {
+    if(data.badges == null) return null
+
+     const gameBadges = data.badges.filter(value => value.badge.goal.key?.startsWith(key))
+    return gameBadges.reduce((partialSum, currentValue) => {
         return partialSum + currentValue.badge.stages.reduce((partialSum2, currentValue2) => partialSum2 + currentValue2.trophies, 0)
     }, 0)
+}
 
+function getPlayerBadgeTrophies(data: PlayerComparisonData, key: string) {
+    if(data.badges == null) return null
+
+    const gameBadges = data.badges.filter(value => value.badge.goal.key?.startsWith(key))
     const playerEarnedTrophies = gameBadges.reduce((partialSum, currentValue) => {
         return partialSum + currentValue.stageProgress.reduce((partialSum2, currentValue2) => {
             return partialSum2 + (currentValue2.progress.obtained >= currentValue2.progress.obtainable ? currentValue.badge.stages[currentValue2.stage - 1].trophies : 0)
         }, 0)
     }, 0)
 
-    return [playerEarnedTrophies,totalTrophies]
+    return playerEarnedTrophies
 }

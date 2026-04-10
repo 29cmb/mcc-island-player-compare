@@ -149,11 +149,11 @@ export type ComparisonData = {
 
 export type PlayerComparisonData = {
     ranks: Rank[]
-    badges: Badge[]
+    badges?: Badge[]
     mccPlusStatus?: {
         evolution: number
     }
-    collections: {
+    collections?: {
         cosmetics: CosmeticOwnershipState[]
     }
     crownLevel: {
