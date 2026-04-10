@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  assetPrefix: process.env.ASSET_PREFIX || "",
+  allowedDevOrigins: ["spaces.hackclub.com"],
   images: {
     remotePatterns: [
       {
