@@ -60,7 +60,7 @@ export default function Home() {
       <Image 
         src="https://cdn2.steamgriddb.com/logo_thumb/14edf56c2a2ce0f05d20e535759f4ee9.png" 
         width={350} 
-        height={0} 
+        height={250}
         loading="eager" 
         alt="MCC Island Logo"
         className="m-3"
@@ -69,7 +69,9 @@ export default function Home() {
       <input className="bg-[#1f1f1f] p-2 rounded-2xl w-100 m-1 border-[#3b3b3b] border focus:outline-none focus:w-110 transition-all" ref={player1Input} id="player1" placeholder="Player 1"/>
       <input className="bg-[#1f1f1f] p-2 rounded-2xl w-100 m-1 border-[#3b3b3b] border focus:outline-none focus:w-110 transition-all" ref={player2Input} id="player2" placeholder="Player 2"/>
       <BorderButton text="Compare" onClick={() => redirect(`/compare/${encodeURIComponent(player1Input.current!.value)}/${encodeURIComponent(player2Input.current!.value)}`, "push")}/>
-        <p>Don&apos;t know who to compare? <button className="text-[#00a2ff] underline cursor-pointer" onClick={() => {redirect(`/compare/${friends[Math.round(Math.random() * friends.length - 1)]}/${friends[Math.round(Math.random() * friends.length - 1)]}`, "push")}}>Compare 2 of my friends!</button></p>
+        <p>Don&apos;t know who to compare? <button className="text-[#00a2ff] underline cursor-pointer" onClick={() => {
+          redirect(`/compare/${friends[Math.round(Math.random() * friends.length - 1)]}/${friends[Math.round(Math.random() * friends.length - 1)]}`, "push")
+        }}>Compare 2 of my friends!</button></p>
     </div>
   </>
 }

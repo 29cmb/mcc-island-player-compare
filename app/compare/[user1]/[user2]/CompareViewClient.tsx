@@ -26,36 +26,60 @@ export default function CompareViewClient({ user1, user2, data }: { user1: strin
     const playerSearchBoxState = useState<number | null>(null)
 
     return <>
-        <div className="flex justify-center bg-[#202020] w-[60em] h-15 rounded-2xl my-3 mx-auto"> 
-            <TopbarBox username={user1} state={playerSearchBoxState} index={1} otherUser={user2}/>
-            <TopbarBox username={user2} state={playerSearchBoxState} index={2} otherUser={user1}/>
+        <div className="flex justify-center w-[60em] h-15 rounded-2xl my-3 mx-auto"> 
+            <TopbarBox username={user1} data={data.player1} state={playerSearchBoxState} index={1} otherUser={user2}/>
+            <TopbarBox username={user2} data={data.player2} state={playerSearchBoxState} index={2} otherUser={user1}/>
         </div>
         <div className="flex flex-col mx-auto items-center">
             <div className="flex flex-row">
-                <PlayerComparisonBox username={user1} data={data.player1}/>
-                <PlayerComparisonBox username={user2} data={data.player2}/>
+                <PlayerComparisonBox username={user1} data={data.player1} index={1}/>
+                <PlayerComparisonBox username={user2} data={data.player2} index={2}/>
             </div>
             <ComparisonBreakdown user1={user1} user2={user2} data={data}/>
         </div>
     </>
 }
 
-function TopbarBox({ username, state, index, otherUser }: { username: string, state: [number | null, Dispatch<SetStateAction<number | null>>], index: number, otherUser: string }) {
+function TopbarBox({ username, data, state, index, otherUser }: { username: string, data: PlayerComparisonData, state: [number | null, Dispatch<SetStateAction<number | null>>], index: number, otherUser: string }) {
     const [openTopbarBox, setOpenTopbarBox] = state
     const inputRef = useRef<HTMLInputElement>(null)
 
-    return <div className="relative flex justify-center m-2 w-[50%]">
-        <button className="bg-[#3c3c3c] rounded-2xl w-full hover:bg-[#4c4c4c] transition-all" onClick={() => {
+    const icons = []
+    if(data.ranks.length == 0) {
+        icons.push("https://islandcdn.themysterys.com/ranks/default.png")
+    } else {
+        const highestRank = data.ranks.reduce((lowest, current) =>
+            RankPriorities[current] < RankPriorities[lowest] ? current : lowest
+        )
+        icons.push(`https://islandcdn.themysterys.com/ranks/${highestRank.toLowerCase()}.png`)
+    }
+    icons.push(`https://islandcdn.themysterys.com/icons/crowns/${Math.min(Math.floor(data.crownLevel.levelData.level / 10), 10)}.png`)
+    const mccPlusIcon = data.mccPlusStatus ? `https://islandcdn.themysterys.com/ranks/plus_${data.mccPlusStatus.evolution + 1}_simple.png` : null
+
+    return <div className="relative flex justify-center w-[50%]">
+        <button style={{ "borderRadius": index == 1 ? "16px 0px 0px 16px" : "0px 16px 16px 0px" }} className="bg-[#171717] w-full hover:bg-[#252525] transition-all border-[#202020] border-3" onClick={() => {
             inputRef.current!.value = ""
             setOpenTopbarBox(openTopbarBox == index ? 0 : index)
         }}>
-            <div className="flex m-auto items-center">
-                <img className="w-8 h-8 mx-2 ml-4" src={`https://minotar.net/helm/${username}/100.png`} alt="Player head"/>
-                <p className="font-bold text-2xl mx-2">{username}</p>
+            <div className="flex flex-row items-center gap-1 shrink-0">
+                <img className="w-8 h-8 mx-1 ml-4" src={`https://minotar.net/helm/${username}/100.png`} alt="Player head"/>
+                {icons.map((item, index) => 
+                    // using regular images because nextjs ones don't have good pixel upscaling
+                    <img
+                        src={item}
+                        key={index}
+                        alt="Username icon"
+                        className="w-7.5"
+                    />
+                )}
+                <p className="font-bold text-2xl mx-1">{username}</p>
+                {mccPlusIcon && 
+                    <img src={mccPlusIcon} alt="MCC+ Icon" className="w-7.5"/>
+                }
             </div>
         </button>
 
-        <div className="absolute w-full h-13 bg-[#181818] rounded-2xl top-full mt-3" style={{ display: openTopbarBox == index ? "block" : "none" }}>
+        <div className="absolute w-full h-13 bg-[#181818] rounded-2xl top-full mt-1" style={{ display: openTopbarBox == index ? "block" : "none" }}>
             <form className="w-full h-full rounded-2xl bg-[#101010]" onSubmit={(event) => {
                 event.preventDefault()
                 redirect(index == 1 ? 
@@ -69,51 +93,28 @@ function TopbarBox({ username, state, index, otherUser }: { username: string, st
     </div>
 }
 
-function PlayerComparisonBox({ username, data }: { username: string, data: PlayerComparisonData }) {
-    const icons = []
-    if(data.ranks.length == 0) {
-        icons.push("https://islandcdn.themysterys.com/ranks/default.png")
-    } else {
-        const highestRank = data.ranks.reduce((lowest, current) =>
-            RankPriorities[current] < RankPriorities[lowest] ? current : lowest
-        )
-        icons.push(`https://islandcdn.themysterys.com/ranks/${highestRank.toLowerCase()}.png`)
-    }
-    icons.push(`https://islandcdn.themysterys.com/icons/crowns/${Math.min(Math.floor(data.crownLevel.levelData.level / 10), 10)}.png`)
-    const mccPlusIcon = data.mccPlusStatus ? `https://islandcdn.themysterys.com/ranks/plus_${data.mccPlusStatus.evolution + 1}_simple.png` : null
-
-    return <div className="flex flex-col m-2">
+function PlayerComparisonBox({ username, data, index }: { username: string, data: PlayerComparisonData, index: number }) {
+    return <div className="flex flex-col my-2 mx-0.5 items-center">
         {SkinEasterEggs[username] ? <SkinOverride image={SkinEasterEggs[username]}/> : <Skin username={username} />}
-        <div className="bg-[#060606] rounded-2xl flex flex-col pb-2">
-            <div className="flex flex-row m-auto">
-                <div className="flex flex-row items-center gap-1 shrink-0">
-                    {icons.map((item, index) => 
-                        // using regular images because nextjs ones don't have good pixel upscaling
-                        <img
-                            src={item}
-                            key={index}
-                            alt="Username icon"
-                            className="w-7.5 object-contain flex-none"
-                        />
-                    )}
+        <div className="bg-[#060606] w-122.5 flex flex-col p-3" style={{ borderRadius: index == 1 ? "16px 0px 0px 16px" : "0px 16px 16px 0px" }}>
+            <div className="flex flex-row justify-center items-center">
+                <div className="flex flex-row items-center">
+                    <img className="w-8.75 m-1" alt="Crown" src={`https://islandcdn.themysterys.com/icons/crowns/${Math.min(Math.floor(data.crownLevel.levelData.level / 10), 10)}.png`}/>
+                    <p className="font-bold m-2 my-0 text-2xl">{data.crownLevel.levelData.level}</p>
                 </div>
-                <p className="text-center font-inter font-bold text-3xl m-2">{username}</p>
-                {mccPlusIcon && 
-                    <div className="flex flex-row items-center gap-1 shrink-0">
-                        <img src={mccPlusIcon} alt="MCC+ Icon" className="w-7.5 object-contain flex-none"/>
-                    </div>
-                }
+                <TrophyDisplay centered={false} amount={data.crownLevel.overall_trophies.obtained} total={data.crownLevel.overall_trophies.obtainable} color="yellow"/>
             </div>
-            <TrophyDisplay amount={data.crownLevel.overall_trophies.obtained} total={data.crownLevel.overall_trophies.obtainable} color="yellow"/>
-            <TrophyDisplay amount={data.crownLevel.skill_trophies.obtained} total={data.crownLevel.skill_trophies.obtainable} color="red"/>
-            <TrophyDisplay amount={data.crownLevel.style_trophies.obtained} total={data.crownLevel.style_trophies.obtainable} color="purple"/>
-            <TrophyDisplay amount={data.crownLevel.angler_trophies.obtained} total={data.crownLevel.angler_trophies.obtainable} color="blue"/>
+            <div className="flex flex-row">
+                <TrophyDisplay centered={true} amount={data.crownLevel.skill_trophies.obtained} total={data.crownLevel.skill_trophies.obtainable} color="red"/>
+                <TrophyDisplay centered={true} amount={data.crownLevel.style_trophies.obtained} total={data.crownLevel.style_trophies.obtainable} color="purple"/>
+                <TrophyDisplay centered={true} amount={data.crownLevel.angler_trophies.obtained} total={data.crownLevel.angler_trophies.obtainable} color="blue"/>
+            </div>
         </div>
     </div>
 }
 
-function TrophyDisplay({ amount, total, color }: { amount: number, total: number, color: string }) {
-    return <div className="flex flex-row m-auto items-center">
+function TrophyDisplay({ amount, total, centered, color }: { amount: number, centered: boolean, total: number, color: string }) {
+    return <div className="flex flex-row items-center" style={{ margin: centered ? "auto" : "0px" }}>
         <Image 
             src={`https://islandcdn.themysterys.com/icons/trophies/${color}.png`}
             height={35} 
@@ -123,7 +124,7 @@ function TrophyDisplay({ amount, total, color }: { amount: number, total: number
         />
         <div className="flex flex-row items-baseline">
             <p className="font-bold">{amount}&nbsp;</p>
-            <p className="text-gray-600 text-[10px]">/ {total}</p>
+            <p className="text-[#737373] text-[13px]">/ {total}</p>
         </div>
     </div>
 }
