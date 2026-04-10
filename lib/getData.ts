@@ -87,7 +87,7 @@ fragment TrophyCounts on TrophyData {
 `
 
 const TEST_DATA = JSON.parse(fs.readFileSync("test_data.json", "utf-8"))
-const USE_PRODUCTION_DATA_IN_DEV = true
+const USE_PRODUCTION_DATA_IN_DEV = false
 
 export default async function getData(user1: string, user2: string): Promise<{ success: boolean } & ({ code: number } | { data: ComparisonData })> {
     if(!process.env.NOXCREW_API_KEY) {
