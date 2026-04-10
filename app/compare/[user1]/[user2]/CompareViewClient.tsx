@@ -137,7 +137,7 @@ const Tabs: { [id: string]: (user1: string, user2: string, data: ComparisonData)
             <GameCard image="https://islandcdn.themysterys.com/games/dynaball/icon.png" user1={user1} user2={user2} data={data} name="Dynaball" badgeKey="dynaball"/>
             <GameCard image="https://islandcdn.themysterys.com/games/tgttos/icon.png" user1={user1} user2={user2} data={data} name="TGTTOS" badgeKey="tgttos"/>
             <GameCard image="https://islandcdn.themysterys.com/games/hitw/icon.png" user1={user1} user2={user2} data={data} name="Hole In The Wall" badgeKey="hole_in_the_wall"/>
-            <GameCard image="https://islandcdn.themysterys.com/games/rocket_spleef/icon.png" user1={user1} user2={user2} data={data} name="Rocket Spleef Rush" badgeKey="hole_in_the_wall"/>
+            <GameCard image="https://islandcdn.themysterys.com/games/rocket_spleef/icon.png" user1={user1} user2={user2} data={data} name="Rocket Spleef Rush" badgeKey="rocket_spleef"/>
         </div>
     },
     ["style"]: (user1, user2, data) => {
