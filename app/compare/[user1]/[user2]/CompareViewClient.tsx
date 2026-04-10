@@ -140,9 +140,19 @@ const Tabs: { [id: string]: (user1: string, user2: string, data: ComparisonData)
             <GameCard image="https://islandcdn.themysterys.com/games/rocket_spleef/icon.png" user1={user1} user2={user2} data={data} name="Rocket Spleef Rush" badgeKey="hole_in_the_wall"/>
         </div>
     },
-    ["style"]: () => {
-        return <div className="flex flex-col items-center">
-            <p className="font-bold mt-2">Coming Soon™️</p>
+    ["style"]: (user1, user2, data) => {
+        return <div className="grid grid-cols-2 gap-3 p-4 h-full overflow-x-hidden overflow-y-scroll recolored-scrollbar">
+            {getCollections(data.player1).map((element, index) => {
+                const snakeCaseCollection = element.toLowerCase().replaceAll(" ", "_")
+                return <StyleCard image={`https://islandcdn.themysterys.com/icons/wardrobe/${snakeCaseCollection}.png`} key={index} name={element} user1={user1} user2={user2} data={data} />
+            })}
+            {/* <StyleCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box"/>
+            <StyleCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box"/>
+            <StyleCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box"/>
+            <StyleCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box"/>
+            <StyleCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box"/>
+            <StyleCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box"/>
+            <StyleCard image="https://islandcdn.themysterys.com/games/battle_box/icon.png" user1={user1} user2={user2} data={data} name="Battle Box"/> */}
         </div>
     },
     ["fishing"]: () => {
@@ -180,32 +190,144 @@ function GameCard({ image, name, user1, user2, data, badgeKey }: { image: string
     const [player1Trophies, totalGameTrophies] = getPlayerTrophies(data.player1, badgeKey)
     const [player2Trophies] = getPlayerTrophies(data.player2, badgeKey)
 
-    return <div className="w-full h-full bg-[#0c0c0c] rounded-2xl p-2">
+    return <StandardComparisonCard 
+        image={image}
+        name={name} 
+        trophyColor="red" 
+        totalTrophies={totalGameTrophies}
+    >
+        <div className="flex flex-row items-center gap-1">
+            <div className="flex flex-row items-center">
+                <div className="bg-[#2f2f2f] rounded-full">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `conic-gradient(transparent 0% ${(1 - (player1Trophies / totalGameTrophies)) * 100}%, lime ${(1 - (player1Trophies / totalGameTrophies)) * 100}% 100%)` }}>
+                        <img className="justify-center m-auto border border-black" src={`https://minotar.net/helm/${user1}/20.png`} alt="Player head"/>
+                    </div>
+                </div>
+                <img src={`https://islandcdn.themysterys.com/icons/trophies/red.png`} className="w-5 ml-1" alt="Skill trophy icon"/>
+                <p className="m-1">{player1Trophies}</p>
+            </div>
+            <div className="flex flex-row items-center">
+                <div className="bg-[#2f2f2f] rounded-full">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `conic-gradient(transparent 0% ${(1 - (player2Trophies / totalGameTrophies)) * 100}%, lime ${(1 - (player2Trophies / totalGameTrophies)) * 100}% 100%)` }}>
+                        <img className="justify-center m-auto border border-black" src={`https://minotar.net/helm/${user2}/20.png`} alt="Player head"/>
+                    </div>
+                </div>
+                <img src={`https://islandcdn.themysterys.com/icons/trophies/red.png`} className="w-5 ml-1" alt="Skill trophy icon"/>
+                <p className="m-1">{player2Trophies}</p>
+            </div>
+        </div>
+    </StandardComparisonCard>
+}
+
+function StyleCard({ image, name, user1, user2, data }: { image: string, name: string, user1: string, user2: string, data: ComparisonData }) {
+    const styleTrophies = getCollectionTotalStyleTrophies(data.player1, name)
+    const reuptation = getCollectionTotalReputation(data.player1, name)
+    const chromas = getCollectionTotalChromaTrophies(data.player1, name)
+
+    const [player1StyleTrophies, player1Rep, player1Chromas] = getPlayerStyleTrophies(data.player1, name)
+    const [player2StyleTrophies, player2Rep, player2Chromas] = getPlayerStyleTrophies(data.player2, name)
+
+    return <StandardComparisonCard 
+        image={image}
+        name={name} 
+        trophyColor="purple" 
+        totalTrophies={styleTrophies + reuptation + chromas}
+    >
+        <div className="flex flex-row items-center gap-1">
+            <div className="flex flex-row items-center">
+                <div className="bg-[#2f2f2f] rounded-full">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `conic-gradient(transparent 0% ${(1 - (player1StyleTrophies / styleTrophies)) * 100}%, lime ${(1 - (player1StyleTrophies / styleTrophies)) * 100}% 100%)` }}>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `conic-gradient(transparent 0% ${(1 - (player1Rep / reuptation)) * 100}%, #9600ff ${(1 - (player1Rep / reuptation)) * 100}% 100%)` }}>            
+                            <img className="justify-center m-auto border border-black" src={`https://minotar.net/helm/${user1}/20.png`} alt="Player head"/>
+                        </div>
+                    </div>
+                </div>
+                <img src={`https://islandcdn.themysterys.com/icons/trophies/purple.png`} className="w-5 ml-1" alt="Skill trophy icon"/>
+                <p className="m-1">{player1StyleTrophies}</p>
+                <img src={`https://islandcdn.themysterys.com/icons/currency/royal_reputation.png`} className="w-5 ml-1" alt="Skill trophy icon"/>
+                <p className="m-1">{player1Rep}</p>
+                <img src={`https://islandcdn.themysterys.com/icons/chroma_pack/prismatic.webp`} className="w-5 ml-1" alt="Skill trophy icon"/>
+                <p className="m-1">{player1Chromas}</p>
+            </div>
+            <div className="flex flex-row items-center">
+                <div className="bg-[#2f2f2f] rounded-full">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `conic-gradient(transparent 0% ${(1 - (player2StyleTrophies / styleTrophies)) * 100}%, lime ${(1 - (player2StyleTrophies / styleTrophies)) * 100}% 100%)` }}>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `conic-gradient(transparent 0% ${(1 - (player2Rep / reuptation)) * 100}%, #9600ff ${(1 - (player2Rep / reuptation)) * 100}% 100%)` }}>            
+                            <img className="justify-center m-auto border border-black" src={`https://minotar.net/helm/${user2}/20.png`} alt="Player head"/>
+                        </div>
+                    </div>
+                </div>
+                <img src={`https://islandcdn.themysterys.com/icons/trophies/purple.png`} className="w-5 ml-1" alt="Skill trophy icon"/>
+                <p className="m-1">{player2StyleTrophies}</p>
+                <img src={`https://islandcdn.themysterys.com/icons/currency/royal_reputation.png`} className="w-5 ml-1" alt="Skill trophy icon"/>
+                <p className="m-1">{player2Rep}</p>
+                <img src={`https://islandcdn.themysterys.com/icons/chroma_pack/prismatic.webp`} className="w-5 ml-1" alt="Skill trophy icon"/>
+                <p className="m-1">{player2Chromas}</p>
+            </div>
+        </div>
+    </StandardComparisonCard>
+}
+
+function StandardComparisonCard(
+    { children, image, name, trophyColor, totalTrophies }: 
+    { children?: ReactNode, image: string, name: string, trophyColor: string, totalTrophies: number }
+) {
+    return <div className="w-120 h-full bg-[#0c0c0c] rounded-2xl p-2">
         <div className="flex flex-row items-center gap-2 m-1">
             <img src={image} alt="Game image" className="w-12"/>
             <p className="font-bold text-3xl pr-3">{name}</p>
         </div>
         <div className="flex flex-row items-center m-1 mt-2">
-            <img src="https://islandcdn.themysterys.com/icons/trophies/red.png" className="w-8" alt="Skill trophy icon"/>
-            <p className="font-bold text-xl px-2">{totalGameTrophies}</p>
+            <img src={`https://islandcdn.themysterys.com/icons/trophies/${trophyColor}.png`} className="w-8" alt="Skill trophy icon"/>
+            <p className="font-bold text-xl px-2">{totalTrophies}</p>
         </div>
-        <div className="flex flex-row items-center gap-1">
-            <div className="flex flex-row items-center">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `conic-gradient(#2f2f2f 0% ${(1 - (player1Trophies / totalGameTrophies)) * 100}%, lime ${(1 - (player1Trophies / totalGameTrophies)) * 100}% 100%)` }}>
-                    <img className="justify-center m-auto border border-black" src={`https://minotar.net/helm/${user1}/20.png`} alt="Player head"/>
-                </div>
-                <img src="https://islandcdn.themysterys.com/icons/trophies/red.png" className="w-5 ml-1" alt="Skill trophy icon"/>
-                <p className="m-1">{player1Trophies}</p>
-            </div>
-            <div className="flex flex-row items-center">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `conic-gradient(#2f2f2f 0% ${(1 - (player2Trophies / totalGameTrophies)) * 100}%, lime ${(1 - (player2Trophies / totalGameTrophies)) * 100}% 100%)` }}>
-                    <img className="justify-center m-auto border border-black" src={`https://minotar.net/helm/${user2}/20.png`} alt="Player head"/>
-                </div>
-                <img src="https://islandcdn.themysterys.com/icons/trophies/red.png" className="w-5 ml-1" alt="Skill trophy icon"/>
-                <p className="m-1">{player2Trophies}</p>
-            </div>
-        </div>
+        {children}
     </div>
+}
+
+function getCollections(data: PlayerComparisonData) {
+    return [...new Set(data.collections.cosmetics.map(c => c.cosmetic.collection))]
+}
+
+function getCollectionTotalStyleTrophies(data: PlayerComparisonData, collection: string) {
+    const cosmetics = data.collections.cosmetics.filter(item => item.cosmetic.collection == collection)
+    return cosmetics.reduce((partialSum, currentValue) => {
+        let trophyPotential = 0
+        if(!currentValue.cosmetic.isBonusTrophies) {
+            trophyPotential += currentValue.cosmetic.trophies
+        }
+
+        return partialSum + trophyPotential
+    }, 0)
+}
+
+function getCollectionTotalChromaTrophies(data: PlayerComparisonData, collection: string) {
+    const cosmetics = data.collections.cosmetics.filter(item => item.cosmetic.collection == collection)
+    return cosmetics.reduce((partialSum, currentValue) => 
+        partialSum + (currentValue.cosmetic.colorable ? 10 : 0)
+    , 0)
+}
+
+function getCollectionTotalReputation(data: PlayerComparisonData, collection: string) {
+    const cosmetics = data.collections.cosmetics.filter(item => item.cosmetic.collection == collection)
+    return cosmetics.reduce((partialSum, currentValue) => 
+        partialSum + (currentValue.cosmetic.royalReputation ? currentValue.cosmetic.royalReputation.reputationAmount * currentValue.cosmetic.royalReputation.donationLimit : 0)
+    , 0)
+}
+
+function getPlayerStyleTrophies(data: PlayerComparisonData, collection: string) {
+    const cosmetics = data.collections.cosmetics.filter(item => item.cosmetic.collection == collection)
+    const trophies = cosmetics.reduce((partialSum, currentValue) =>
+        partialSum + (currentValue.owned ? currentValue.cosmetic.trophies : 0)
+    , 0)
+    const reputation = cosmetics.reduce((partialSum, currentValue) =>
+        partialSum + (currentValue.cosmetic.royalReputation == null ? 0 : currentValue.donationsMade * currentValue.cosmetic.royalReputation.reputationAmount)
+    , 0)
+    const chromas = cosmetics.reduce((partialSum, currentValue) => 
+        partialSum + (currentValue.cosmetic.colorable && currentValue.chromaPacks.length == 4 ? 10 : 0)
+    , 0)
+
+    return [trophies, reputation, chromas]
 }
 
 function getPlayerTrophies(data: PlayerComparisonData, key: string) {

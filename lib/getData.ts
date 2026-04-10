@@ -29,6 +29,7 @@ fragment PlayerFields on Player {
           key
         }
       }
+      name
       stages {
         trophies
       }
@@ -38,6 +39,23 @@ fragment PlayerFields on Player {
       progress {
         obtainable
         obtained
+      }
+    }
+  }
+  collections {
+    cosmetics {
+      owned
+      chromaPacks
+      donationsMade
+      cosmetic {
+        colorable
+        collection
+        trophies
+        isBonusTrophies
+        royalReputation {
+          donationLimit
+          reputationAmount
+        }
       }
     }
   }
@@ -68,6 +86,7 @@ fragment TrophyCounts on TrophyData {
 `
 
 const TEST_DATA = JSON.parse(fs.readFileSync("test_data.json", "utf-8"))
+const USE_PRODUCTION_DATA_IN_DEV = true
 
 export default async function getData(user1: string, user2: string): Promise<{ success: boolean } & ({ code: number } | { data: ComparisonData })> {
     if(!process.env.NOXCREW_API_KEY) {
@@ -76,7 +95,7 @@ export default async function getData(user1: string, user2: string): Promise<{ s
 
     let mccIslandData
     try {
-        if(process.env.NODE_ENV == "development") {
+        if(process.env.NODE_ENV == "development" && !USE_PRODUCTION_DATA_IN_DEV) {
             mccIslandData = TEST_DATA
         } else {
             mccIslandData = await fetch("https://api.mccisland.net/graphql", {
@@ -133,6 +152,9 @@ export type PlayerComparisonData = {
     mccPlusStatus?: {
         evolution: number
     }
+    collections: {
+        cosmetics: CosmeticOwnershipState[]
+    }
     crownLevel: {
         levelData: {
             level: number
@@ -172,6 +194,22 @@ export type Badge = {
             obtained: number
         }
     }[]
+}
+
+export type CosmeticOwnershipState = {
+    owned: boolean,
+    chromaPacks: string[]
+    donationsMade: number
+    cosmetic: {
+        colorable: boolean
+        collection: string,
+        trophies: number,
+        isBonusTrophies: number,
+        royalReputation?: {
+            donationLimit: number,
+            reputationAmount: number
+        }
+    }
 }
 
 type Rank = "NOXCREW" | "GRAND_CHAMP_SUPREME" | "GRAND_CHAMP_ROYALE" | "GRAND_CHAMP" | "CHAMP" | "CONTESTANT" | "CREATOR"
