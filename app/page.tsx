@@ -81,7 +81,7 @@ export default function Home() {
         redirect(`/compare/${encodeURIComponent(player1Input.current!.value)}/${encodeURIComponent(player2Input.current!.value)}`, "push")
       }}/>
         <p>Don&apos;t know who to compare? <button className="text-[#00a2ff] underline cursor-pointer" onClick={() => {
-          redirect(`/compare/${friends[Math.round(Math.random() * friends.length - 1)]}/${friends[Math.round(Math.random() * friends.length - 1)]}`, "push")
+          redirect(`/compare/${friends[Math.round(Math.random() * friends.length)]}/${friends[Math.round(Math.random() * friends.length)]}`, "push")
         }}>Compare 2 of my friends!</button></p>
     </div>
   </>

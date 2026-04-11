@@ -10,7 +10,7 @@ const redis = new Redis({
 
 const ratelimit = new Ratelimit({
   redis: redis,
-  limiter: Ratelimit.fixedWindow(10, "1 m"),
+  limiter: Ratelimit.fixedWindow(7, "1 m"),
 });
 
 export const proxy: NextProxy = async (req: NextRequest) => {

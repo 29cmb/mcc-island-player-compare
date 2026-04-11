@@ -5,6 +5,7 @@ import { ComparisonData, PlayerComparisonData } from "@/lib/getData"
 import Image from "next/image"
 import { Dispatch, ReactNode, SetStateAction, useRef, useState } from "react"
 import { redirect } from "next/navigation"
+import { BorderButton } from "@/components/BorderButton"
 
 const RankPriorities = {
     "NOXCREW": 1,
@@ -26,6 +27,9 @@ export default function CompareViewClient({ user1, user2, data }: { user1: strin
     const playerSearchBoxState = useState<number | null>(null)
 
     return <>
+        <div className="fixed p-3">
+            <BorderButton text="Go home" onClick={() => {redirect("/", "push")}} />
+        </div>
         <div className="flex justify-center w-[60em] h-15 rounded-2xl my-3 mx-auto"> 
             <TopbarBox username={user1} data={data.player1} state={playerSearchBoxState} index={1} otherUser={user2}/>
             <TopbarBox username={user2} data={data.player2} state={playerSearchBoxState} index={2} otherUser={user1}/>
