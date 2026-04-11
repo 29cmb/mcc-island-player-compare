@@ -180,7 +180,7 @@ const Tabs: { [id: string]: (user1: string, user2: string, data: ComparisonData)
             </div>
         }
 
-        const templatePlayer = data.player1.badges ? data.player1 : data.player2
+        const templatePlayer = data.player1.collections ? data.player1 : data.player2
 
         return <div className="grid grid-cols-2 gap-3 p-4 h-full overflow-x-hidden overflow-y-scroll recolored-scrollbar">
             {getCollections(templatePlayer)!.map((element, index) => {
@@ -259,8 +259,8 @@ function GameCard({ image, name, user1, user2, data, badgeKey }: { image: string
 function StyleCard({ image, name, user1, user2, data }: { image: string, name: string, user1: string, user2: string, data: ComparisonData }) {
     let templatePlayer: PlayerComparisonData
 
-    if(data.player1.badges && !data.player2.badges) templatePlayer = data.player1
-    else if(data.player2.badges && !data.player1.badges) templatePlayer = data.player2
+    if(data.player1.collections && !data.player2.collections) templatePlayer = data.player1
+    else if(data.player2.collections && !data.player1.collections) templatePlayer = data.player2
     else {
         const player1Cosmetics = data.player1.collections?.cosmetics.filter(c => c.cosmetic.collection == name)
         const player2Cosmetics = data.player2.collections?.cosmetics.filter(c => c.cosmetic.collection == name)
